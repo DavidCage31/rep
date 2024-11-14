@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 
 class Math
 {
@@ -8,7 +8,7 @@ private:
     Math() {};
 
 public:
-    Math(const Math& obl) = delete;
+    Math(const Math& obj) = delete;
     ~Math()
     {
         instancePtr = nullptr;
@@ -30,7 +30,6 @@ public:
     {
         return a + b;
     }
-
 };
 
 Math* Math::instancePtr = nullptr;
@@ -164,28 +163,33 @@ public:
     }
 };
 
-class Pizza {
+class Pizza 
+{
 private:
     std::string dough;
     std::string sauce;
     std::string topping;
 
 public:
-    void setDough(std::string dough) {
+    void setDough(std::string dough) 
+    {
         this->dough = dough;
     }
 
-    void setSauce(std::string sauce) {
+    void setSauce(std::string sauce) 
+    {
         this->sauce = sauce;
     }
 
-    void setTopping(std::string topping) {
+    void setTopping(std::string topping) 
+    {
         this->topping = topping;
     }
 };
 
 class PizzaBuilder 
 {
+public:
     virtual ~PizzaBuilder() = 0;
     virtual void buildDough() = 0;
     virtual void buildSauce() = 0;
@@ -202,6 +206,10 @@ public:
     HawaiianPizzaBuilder() 
     {
         this->pizza = new Pizza();
+    }
+    ~HawaiianPizzaBuilder()
+    {
+        delete this->pizza;
     }
 
    
@@ -226,78 +234,22 @@ public:
     }
 };
 
-class Meal {
-private:
-    std::string appetizer;
-    std::string mainCourse;
-    std::string dessert;
-
-public:
-    void setAppetizer(const std::string& app) { appetizer = app; }
-    void setMainCourse(const std::string& main) { mainCourse = main; }
-    void setDessert(const std::string& des) { dessert = des; }
-    void showMeal() 
-    {
-        std::cout << "Meal consists of: " << appetizer << ", " << mainCourse << ", and " << dessert << "." << std::endl;
-    }
-};
-
-class MealBuilder 
-{
-public:
-    virtual void buildAppetizer() = 0;
-    virtual void buildMainCourse() = 0;
-    virtual void buildDessert() = 0;
-    virtual Meal* getMeal() = 0;
-};
-
-class ItalianMealBuilder : public MealBuilder 
-{
-    Meal* meal;
-public:
-    ItalianMealBuilder() 
-    { 
-        meal = new Meal(); 
-    }
-    void buildAppetizer() 
-    {
-        meal->setAppetizer("Bruschetta"); 
-    }
-    void buildMainCourse() 
-    {
-        meal->setMainCourse("Pizza");
-    }
-    void buildDessert()
-    {
-        meal->setDessert("Gelato");
-    }
-    Meal* getMeal() 
-    {
-        return meal;
-    }
-};
-
-class Cook 
+class PizzaDirector
 {
 private:
-    MealBuilder* builder;
+    PizzaBuilder* builder;
 
 public:
-    Cook(MealBuilder* builder)
+    PizzaDirector(PizzaBuilder* builder)
     {
         this->builder = builder;
     }
 
-    void constructMeal() 
+    void constructPizza()
     {
-        builder->buildAppetizer();
-        builder->buildMainCourse();
-        builder->buildDessert();
-    }
-
-    Meal* getMeal() 
-    {
-        return builder->getMeal();
+        builder->buildDough();
+        builder->buildSauce();
+        builder->buildTopping();
     }
 };
 
