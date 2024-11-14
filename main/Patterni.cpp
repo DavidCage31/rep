@@ -69,7 +69,7 @@ class CircleFactory : public ShapeFactory
 public:
     Shape* createShape() override
     {
-        return new Circle;
+        return new Circle();
     }
 };
 
@@ -78,7 +78,7 @@ class SquareFactory : public ShapeFactory
 public:
     Shape* createShape() override
     {
-        return new Square;
+        return new Square();
     }
 };
 
@@ -140,12 +140,12 @@ class WindowsFactory : public GUIFactory
 public:
     Button* createButton() override
     {
-        return new WindowsButton;
+        return new WindowsButton();
     }
 
     CheckBox* createCheckBox() override
     {
-        return new WindowsCheckBox;
+        return new WindowsCheckBox();
     }
 };
 
@@ -154,12 +154,12 @@ class MacFactory : public GUIFactory
 public:
     Button* createButton() override
     {
-        return new MacButton;
+        return new MacButton();
     }
 
     CheckBox* createCheckBox() override
     {
-        return new MacCheckBox;
+        return new MacCheckBox();
     }
 };
 
