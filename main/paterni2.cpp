@@ -135,9 +135,8 @@ public:
     int next() override 
     {
         if (hasNext()) 
-        {
             return collection[position++];
-        }
+        
         throw std::out_of_range("No more elements in the collection");
     }
 };
