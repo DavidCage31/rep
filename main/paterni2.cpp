@@ -42,23 +42,6 @@ public:
     }
 };
 
-class Sorter
-{
-private:
-    SortingStrategy* strategy;
-
-public:
-    void setStrategy(SortingStrategy* strategy)
-    {
-        this->strategy = strategy;
-    }
-
-    void sortArray(std::vector<int>& arr)
-    {
-        strategy->sort(arr);
-    }
-};
-
 enum RequestType
 {
     Type_A, Type_B
