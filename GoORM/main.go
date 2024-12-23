@@ -25,7 +25,7 @@ func main() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		panic("не удалось подключится к бд")
+		panic("не удалось подключиться к бд")
 	}
 
 	db.AutoMigrate(&Category{}, &Product{})
