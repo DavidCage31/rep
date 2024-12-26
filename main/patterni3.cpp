@@ -1,185 +1,152 @@
-#pragma once
-
 #include <iostream>
-#include <stdexcept>
-#include <vector>
 
-template<typename norVec_Ty>
-class NorVectorInterface {
+class DataBase {
 public:
-	virtual ~NorVectorInterface() = default;
-
-	virtual void push_back(const norVec_Ty& value) = 0;
-	virtual norVec_Ty pop_back() = 0;
-	virtual void make_size(const size_t size) = 0;
-
-	virtual norVec_Ty operatorIndex(const size_t index) = 0;
-
-	virtual void reverse() = 0;
-	virtual size_t size() = 0;
+    virtual void query(std::string sql) = 0;
 };
 
-template<typename norVec_Ty>
-class NorVector : public NorVectorInterface<norVec_Ty> {
+class RealDataBase : public DataBase {
+public:
+    void query(std::string sql) override {
+        std::cout << "Executing query: " + sql + '\n';
+    }
+};
+
+class DataBaseProxy : public DataBase {
 private:
-	size_t 		N;
-	size_t 		capacity;
-	norVec_Ty*  norVec;
-	norVec_Ty* 	arr;
+    RealDataBase* realDataBase;
+    bool hasAccess;
 
 public:
-	NorVector() {
-		capacity = N = 0;
-		norVec = new norVec_Ty[N];
-		arr = nullptr;
-	}
-	NorVector(const size_t size) {
-		capacity = N = size;
-		norVec = new norVec_Ty[capacity];
-		arr = nullptr;
-	}
-	NorVector(const NorVector<norVec_Ty>& other) {
-		capacity = other.capacity;
-		N = other.N;
-		norVec = new norVec_Ty[capacity];
-		arr = nullptr;
+    DataBaseProxy(bool hasAccess) {
+        this->realDataBase = new RealDataBase();
+        this->hasAccess = hasAccess;
+    }
+    ~DataBaseProxy() {
+        delete realDataBase;
+    }
 
-		for (size_t i = 0; i < N; i++)
-			norVec[i] = other.norVec[i];
-	}
-	NorVector(const std::vector<norVec_Ty>& vec) {
-		capacity = N = vec.size();
-		norVec = new norVec_Ty[capacity];
-		arr = nullptr;
-
-		for (size_t i = 0; i < N; i++)
-			norVec[i] = vec[i];
-	}
-
-	~NorVector() {
-		delete[] norVec;
-		delete[] arr;
-	}
-
-	void push_back(const norVec_Ty& value) override {
-		if (this->N < this->capacity) {
-			this->norVec[this->N++] = value;
-		} else {
-			if (this->capacity < 100) {
-				this->capacity = 100;
-			} else if (this->capacity < 1000) {
-				this->capacity *= 2;
-			} else {
-				this->capacity *= 1.2;
-			}
-
-			this->arr = this->norVec;
-			this->norVec = new norVec_Ty[this->capacity];
-
-			for (size_t i = 0; i < this->N; i++)
-				this->norVec[i] = this->arr[i];
-
-			this->norVec[this->N++] = value;
-
-			delete[] this->arr;
-			this->arr = nullptr;
-		}
-	}
-
-	norVec_Ty pop_back() override {
-		if (this->N == 0)
-			throw std::runtime_error("NorVector is empty");
-		
-		return this->norVec[N-- - 1];
-	}
-
-	void make_size(const size_t size) override {
-		if (this->capacity < size) {
-			this->arr = norVec;
-
-			this->norVec = new norVec_Ty[size];
-
-			for (size_t i = 0; i < this->N; i++)
-				this->norVec[i] - this->arr[i];
-
-			this->capacity = this->N = size;
-
-			delete this->arr;
-			this->arr = nullptr;
-		} else {
-			this->N = size;
-		}
-	}
-
-	norVec_Ty operatorIndex(const size_t index) override {
-		return operator[](index);
-	}
-
-	norVec_Ty& operator[](const size_t index) {
-		if (index >= N)
-			throw std::runtime_error("Index out of range");
-		return this->norVec[index];
-	}
-
-	norVec_Ty& operator()(const size_t indexFromEnd) {
-		return this->norVec[N - 1 - indexFromEnd];
-	}
-
-	NorVector& operator=(const NorVector& other) = delete;
-
-	bool operator==(const NorVector& other) {
-		if (this == *other)
-			return true;
-
-		if (this->N != other.N)
-			return false;
-
-		for (size_t i = 0; i < this->N; i++)
-			if (this->norVec[i] != other.norVec[i])
-				return false;
-
-		return true;
-	}
-
-	norVec_Ty& last() {
-		return this->norVec[N - 1];
-	}
-
-	void copy(const NorVector<norVec_Ty>& other) {
-		if (this == *other)
-			return;
-
-		capacity = other.capacity;
-		N = other.N;
-		norVec = new norVec_Ty[capacity];
-
-		for (int i = 0; i < N; i++)
-			norVec[i] = other[i];
-	}
-
-	bool isEmpty() {
-		return N == 0;
-	}
-
-	void show() {
-		for (size_t i = 0; i < this->N; i++)
-			std::cout << norVec[i] << ' ';
-		std::cout << "\n";
-	}
-
-	void reverse() override {
-		for (size_t i = 0; i < this->N / 2; i++)
-			std::swap(norVec[i], norVec[N - i - 1]);
-	}
-
-	size_t size() override {
-		return this->N;
-	}
+    void query(std::string sql) override {
+        if (hasAccess)
+            realDataBase->query(sql);
+        else
+            std::cout << "Access denied. Query cannot be executed.\n";
+    }
 };
 
-template<typename T>
-std::ostream& operator<<(std::ostream& out, const NorVector<T>& vec) {
-	for (size_t i = 0; i < vec.size(); i++)
-		out << vec[i] << ' ';
-	return out;
+class ExternalLogger {
+public:
+    void logMessage(std::string msg) {
+        std::cout << "External log: " + msg + '\n';
+    }
+};
+
+class Logger {
+public:
+    virtual void log(std::string msg) = 0;
+};
+
+class LoggerAdapter : public Logger {
+private:
+    ExternalLogger externalLogger;
+
+public:
+    LoggerAdapter(ExternalLogger externalLogger) : externalLogger(externalLogger) { }
+
+    void log(std::string msg) override {
+        externalLogger.logMessage(msg);
+    }
+};
+
+class Device {
+public:
+    virtual void print(std::string data) = 0;
+};
+
+class Monitor : public Device {
+public:
+    void print(std::string data) override {
+        std::cout << "Displaying on monitor: " + data + '\n';
+    }
+};
+
+class Printer : public Device {
+public:
+    void print(std::string data) override {
+        std::cout << "Printing to paper: " + data + '\n';
+    }
+};
+
+class Output {
+protected:
+    Device* device;
+
+public:
+    Output(Device* device) : device(device) {};
+
+    virtual void render(std::string data) = 0;
+};
+
+class TextOutput : public Output {
+public:
+    TextOutput(Device* device) : Output(device) {};
+
+    void render(std::string data) override {
+        device->print("Text: " + data);
+    }
+};
+
+class ImageOutput : public Output {
+public:
+    ImageOutput(Device* device) : Output(device) {};
+
+    void render(std::string data) override {
+        device->print("Image: [Binary data: " + data + " ]");
+    }
+};
+
+int main() {
+    DataBase* userDb = new DataBaseProxy(false);
+    DataBase* adminDb = new DataBaseProxy(true);
+
+    userDb->query("SELECT * FROM users");
+    adminDb->query("SELECT * FROM users");
+
+    delete userDb;
+    delete adminDb;
+
+    std::cout << '\n';
+
+
+    ExternalLogger* elogger = new ExternalLogger();
+    Logger* logger          = new LoggerAdapter(*elogger);
+
+    logger->log("some message");
+
+    delete logger;
+    delete elogger;
+
+    std::cout << '\n';
+
+
+    Device* monitor = new Monitor();
+    Device* printer = new Printer();
+
+    Output* textOnMonitor = new TextOutput(monitor);
+    Output* textOnPrinter = new TextOutput(printer);
+
+    textOnMonitor->render("Hello, world!");
+    textOnPrinter->render("Hello, world!");
+
+    Output* imageOnMonitor = new ImageOutput(monitor);
+
+    imageOnMonitor->render("101010101");
+
+    delete imageOnMonitor;
+    delete textOnPrinter;
+    delete textOnMonitor;
+    delete printer;
+    delete monitor;
+
+    return 0;
 }
